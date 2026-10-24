@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1060" viewBox="0 0 1500 1060">
+<title>STRATOS telemetry architecture (proposed)</title><desc>Onboard logging, packet construction, radio link, ground validation, ground logging and reconciliation.</desc>
+<defs>
+<marker id="arrow-data" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#1F5F99"/></marker>
+<marker id="arrow-data-rev" viewBox="0 0 10 8" refX="0" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="10 0, 0 4, 10 8" fill="#1F5F99"/></marker>
+<marker id="arrow-control" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#6B4FA0"/></marker>
+<marker id="arrow-control-rev" viewBox="0 0 10 8" refX="0" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="10 0, 0 4, 10 8" fill="#6B4FA0"/></marker>
+<marker id="arrow-power" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="6" markerHeight="5" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#C0571B"/></marker>
+<marker id="arrow-power-rev" viewBox="0 0 10 8" refX="0" refY="4" markerWidth="6" markerHeight="5" orient="auto"><polygon points="10 0, 0 4, 10 8" fill="#C0571B"/></marker>
+<marker id="arrow-rf" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#0F7C83"/></marker>
+<marker id="arrow-rf-rev" viewBox="0 0 10 8" refX="0" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="10 0, 0 4, 10 8" fill="#0F7C83"/></marker>
+<marker id="arrow-plain" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#8A96A3"/></marker>
+<marker id="arrow-plain-rev" viewBox="0 0 10 8" refX="0" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="10 0, 0 4, 10 8" fill="#8A96A3"/></marker>
+<marker id="arrow-error" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#B3261E"/></marker>
+<marker id="arrow-error-rev" viewBox="0 0 10 8" refX="0" refY="4" markerWidth="7" markerHeight="6" orient="auto"><polygon points="10 0, 0 4, 10 8" fill="#B3261E"/></marker>
+</defs>
+<rect width="1500" height="1060" fill="#FFFFFF"/>
+<text x="30" y="36" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="21" font-weight="700" fill="#1B2733" text-anchor="start" xml:space="preserve" >STRATOS — Telemetry, onboard logging and reconciliation architecture</text>
+<text x="30" y="59" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#5B6875" text-anchor="start" xml:space="preserve" >Proposed design. Records every 100 ms (10 Hz); every 10th record is also transmitted (1 Hz). GFSK 866.0 MHz, 38.4 kb/s, ±40 kHz: 44-byte frame ≈ 11.5 ms on air (1.15 % duty cycle).</text>
+<rect x="25" y="80" width="640" height="640" rx="12" fill="#E8F0F8" stroke="#2F5D8A" stroke-width="1.6" />
+<text x="45" y="106" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#2F5D8A" text-anchor="start" xml:space="preserve" >PAYLOAD (ESP32-WROOM-32E firmware)</text>
+<rect x="835" y="80" width="640" height="640" rx="12" fill="#EEF6EE" stroke="#3C7A47" stroke-width="1.6" />
+<text x="855" y="106" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#3C7A47" text-anchor="start" xml:space="preserve" >GROUND STATION (receiver + laptop software)</text>
+<rect x="60" y="130" width="270" height="74" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="195.0" y="148" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >1  Sensor acquisition</text>
+<text x="195.0" y="163.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >BME280 (T, RH, P) · IMU (acc, gyro)</text>
+<text x="195.0" y="176.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >battery voltage (ADC)</text>
+<rect x="60" y="250" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="195.0" y="268" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >2  Structured record</text>
+<text x="195.0" y="283.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >session · rec_seq · t_ms</text>
+<text x="195.0" y="296.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >10 measurement fields · status flags</text>
+<text x="195.0" y="309.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >absent value → flag + sentinel</text>
+<rect x="370" y="250" width="270" height="92" rx="6" fill="#FFF4D6" stroke="#B26A00" stroke-width="1.4" />
+<text x="505.0" y="268" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >3  Onboard log (every record)</text>
+<text x="505.0" y="283.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >RAM ring buffer → microSD</text>
+<text x="505.0" y="296.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >CSV line + line CRC-16</text>
+<text x="505.0" y="309.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >LOG_&lt;session&gt;.CSV, flush 1 s</text>
+<rect x="60" y="400" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="195.0" y="418" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >4  Packet construction</text>
+<text x="195.0" y="433.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >1 record in 10 (rec_seq mod 10 = 1)</text>
+<text x="195.0" y="446.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >pkt_seq + 1 · 44-byte binary frame</text>
+<text x="195.0" y="459.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >CRC-16/CCITT-FALSE (bytes 0–41)</text>
+<rect x="60" y="545" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="195.0" y="563" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >5  Radio transmission</text>
+<text x="195.0" y="578.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >Ai-Thinker Ra-01H (Semtech SX1276)</text>
+<text x="195.0" y="591.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >+14 dBm, non-blocking</text>
+<text x="195.0" y="604.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >PacketSent (DIO0) or 50 ms timeout</text>
+<rect x="370" y="545" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="505.0" y="563" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >Radio outcome → log</text>
+<text x="505.0" y="578.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >tx = 'T' (PacketSent seen)</text>
+<text x="505.0" y="591.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >tx = 'F' (timeout) + RADIO_ERR</text>
+<text x="505.0" y="604.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >written into the same CSV line</text>
+<rect x="870" y="130" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="1005.0" y="148" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >6  Reception</text>
+<text x="1005.0" y="163.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >Ai-Thinker Ra-01H + ESP32 receiver</text>
+<text x="1005.0" y="176.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >USB serial: RX,ms,rssi,snr,len,hex</text>
+<text x="1005.0" y="189.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >host adds UTC reception time</text>
+<rect x="870" y="270" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="1005.0" y="288" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >7  Validation</text>
+<text x="1005.0" y="303.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >length = 44 bytes</text>
+<text x="1005.0" y="316.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >CRC-16 verified before any field</text>
+<text x="1005.0" y="329.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >magic 'ST', version, type</text>
+<rect x="1180" y="270" width="265" height="92" rx="6" fill="#FDECEA" stroke="#B3261E" stroke-width="1.4" />
+<text x="1312.5" y="288" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >Reject log</text>
+<text x="1312.5" y="303.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >ground_rejected.csv</text>
+<text x="1312.5" y="316.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >reason + raw bytes kept</text>
+<text x="1312.5" y="329.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >counted, never silently dropped</text>
+<rect x="870" y="410" width="270" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="1005.0" y="428" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >8  Sequence tracking</text>
+<text x="1005.0" y="443.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >per-session expected pkt_seq</text>
+<text x="1005.0" y="456.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >GAP / DUPLICATE / OUT_OF_ORDER</text>
+<text x="1005.0" y="469.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >SESSION_CHANGE (payload reboot)</text>
+<rect x="870" y="550" width="270" height="92" rx="6" fill="#FFF4D6" stroke="#B26A00" stroke-width="1.4" />
+<text x="1005.0" y="568" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >9  Ground logs</text>
+<text x="1005.0" y="583.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >ground_accepted.csv (+ rx_utc,</text>
+<text x="1005.0" y="596.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >rssi, snr, seq_event)</text>
+<text x="1005.0" y="609.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >ground_gaps.csv · raw capture</text>
+<rect x="1180" y="550" width="265" height="92" rx="6" fill="#FFFFFF" stroke="#5B6875" stroke-width="1.4" />
+<text x="1312.5" y="568" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="12.5" font-weight="650" fill="#1B2733" text-anchor="middle" xml:space="preserve" >Live display</text>
+<text x="1312.5" y="583.0" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >reads the logged stream</text>
+<text x="1312.5" y="596.2" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >shows gaps and rejects</text>
+<text x="1312.5" y="609.4" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="middle" xml:space="preserve" >(not the record of truth)</text>
+<path d="M 195.0 204 L 195.0 250" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="107.0" y="222" width="176.0" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="195" y="232" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >I2C reads, plausibility checks</text>
+<path d="M 330 296.0 L 370 296.0" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="312.4" y="278" width="75.2" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="350" y="288" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >every record</text>
+<path d="M 195.0 342 L 195.0 400" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="171.4" y="368" width="47.2" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="195" y="378" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >1 in 10</text>
+<path d="M 195.0 492 L 195.0 545" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="146.2" y="514" width="97.6" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="195" y="524" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >SPI → radio FIFO</text>
+<path d="M 330 591.0 L 370 591.0" fill="none" stroke="#6B4FA0" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#arrow-control)" stroke-linejoin="round"/>
+<rect x="319.4" y="602.5" width="61.2" height="14.5" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="350" y="612" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="9.5" font-weight="500" fill="#6B4FA0" text-anchor="middle" xml:space="preserve" >PacketSent</text>
+<rect x="322.1" y="616.5" width="55.9" height="14.5" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="350" y="626" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="9.5" font-weight="500" fill="#6B4FA0" text-anchor="middle" xml:space="preserve" >/ timeout</text>
+<path d="M 505.0 545 L 505.0 342" fill="none" stroke="#6B4FA0" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#arrow-control)" stroke-linejoin="round"/>
+<rect x="506.4" y="435" width="47.2" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="530" y="445" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#6B4FA0" text-anchor="middle" xml:space="preserve" >outcome</text>
+<path d="M 195.0 637 L 195 685 L 760 685 L 760 176 L 870 176.0" fill="none" stroke="#0F7C83" stroke-width="1.8" stroke-dasharray="2 3" marker-end="url(#arrow-rf)" stroke-linejoin="round"/>
+<rect x="715.2" y="369" width="69.6" height="16" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="750" y="380" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#0F7C83" text-anchor="middle" xml:space="preserve" >GFSK frame</text>
+<rect x="692.8" y="388" width="114.4" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="750" y="398" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#0F7C83" text-anchor="middle" xml:space="preserve" >866.0 MHz · 11.5 ms</text>
+<rect x="712.4" y="405" width="75.2" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="750" y="415" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#0F7C83" text-anchor="middle" xml:space="preserve" >1 per second</text>
+<path d="M 760 461 L 769 470 L 760 479 L 751 470 Z" fill="#FDECEA" stroke="#B3261E" stroke-width="1.4"/>
+<text x="760" y="473.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#B3261E" text-anchor="middle" xml:space="preserve" >E1</text>
+<path d="M 1005.0 222 L 1005.0 270" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="970.2" y="242" width="69.6" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="1005" y="252" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >frame bytes</text>
+<path d="M 1140 316.0 L 1180 316.0" fill="none" stroke="#B3261E" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arrow-error)" stroke-linejoin="round"/>
+<rect x="1142.0" y="296" width="36.0" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="1160" y="306" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#B3261E" text-anchor="middle" xml:space="preserve" >fails</text>
+<path d="M 1005.0 362 L 1005.0 410" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="967.4" y="382" width="75.2" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="1005" y="392" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >valid packet</text>
+<path d="M 1005.0 502 L 1005.0 550" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<rect x="956.2" y="522" width="97.6" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.92"/>
+<text x="1005" y="532" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#1F5F99" text-anchor="middle" xml:space="preserve" >accepted + event</text>
+<path d="M 1140 596.0 L 1180 596.0" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<path d="M 345 131 L 354 140 L 345 149 L 336 140 Z" fill="#FDECEA" stroke="#B3261E" stroke-width="1.4"/>
+<text x="345" y="143.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#B3261E" text-anchor="middle" xml:space="preserve" >E2</text>
+<circle cx="366" cy="140" r="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.4"/>
+<text x="366" y="143.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#2E7D32" text-anchor="middle" xml:space="preserve" >D1</text>
+<path d="M 625 229 L 634 238 L 625 247 L 616 238 Z" fill="#FDECEA" stroke="#B3261E" stroke-width="1.4"/>
+<text x="625" y="241.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#B3261E" text-anchor="middle" xml:space="preserve" >E3</text>
+<circle cx="646" cy="238" r="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.4"/>
+<text x="646" y="241.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#2E7D32" text-anchor="middle" xml:space="preserve" >D2</text>
+<circle cx="1160" cy="342" r="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.4"/>
+<text x="1160" y="345.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#2E7D32" text-anchor="middle" xml:space="preserve" >D3</text>
+<circle cx="1150" cy="440" r="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.4"/>
+<text x="1150" y="443.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#2E7D32" text-anchor="middle" xml:space="preserve" >D4</text>
+<circle cx="645" cy="545" r="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.4"/>
+<text x="645" y="548.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#2E7D32" text-anchor="middle" xml:space="preserve" >D5</text>
+<rect x="25" y="745" width="1450" height="110" rx="12" fill="#F6F1FB" stroke="#6B4FA0" stroke-width="1.6" />
+<text x="45" y="771" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#6B4FA0" text-anchor="start" xml:space="preserve" >10  Post-mission reconciliation (stratos_gs.reconcile) — after the payload is recovered</text>
+<text x="45" y="795" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >Inputs: recovered LOG_&lt;session&gt;.CSV + ground_accepted.csv + ground_rejected.csv.   Per session: verify every onboard line CRC; check onboard rec_seq continuity;</text>
+<text x="45" y="814" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >match each transmitted record (tx = 'T') to the ground packet with the same pkt_seq and compare 13 fields; classify MISSING (no frame / corrupted frame observed),</text>
+<text x="45" y="833" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >NOT_TRANSMITTED (tx = 'F'), MISMATCH, GROUND_ONLY.   Output: counts of onboard records, packets received, invalid packets, missing sequence numbers, matches, unresolved items.</text>
+<path d="M 640 314.4 L 690 314 L 690 745" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<path d="M 1005.0 642 L 1005 700 L 1005 745" fill="none" stroke="#1F5F99" stroke-width="1.8" marker-end="url(#arrow-data)" stroke-linejoin="round"/>
+<circle cx="1290" cy="775" r="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.4"/>
+<text x="1290" y="778.5" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#2E7D32" text-anchor="middle" xml:space="preserve" >D6</text>
+<text x="30" y="885" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#1B2733" text-anchor="start" xml:space="preserve" >Three different data objects (kept distinct throughout the design)</text>
+<rect x="30" y="897" width="335" height="82" rx="8" fill="#F5F7FA" stroke="#E3E8EE" stroke-width="1.2" />
+<text x="40" y="918" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.5" font-weight="650" fill="#1B2733" text-anchor="start" xml:space="preserve" >Local record (onboard CSV line)</text>
+<text x="40" y="941" font-family="'DejaVu Sans Mono', Consolas, monospace" font-size="9.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >7,1,412,2348,6024,845577,-16,-1,1005,2,-5,-4,3951,000…</text>
+<text x="40" y="963" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="start" xml:space="preserve" >integers in packet units; empty field = absent; line CRC</text>
+<rect x="375" y="897" width="335" height="82" rx="8" fill="#F5F7FA" stroke="#E3E8EE" stroke-width="1.2" />
+<text x="385" y="918" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.5" font-weight="650" fill="#1B2733" text-anchor="start" xml:space="preserve" >Telemetry packet (binary, 44 bytes)</text>
+<text x="385" y="941" font-family="'DejaVu Sans Mono', Consolas, monospace" font-size="9.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >53540101070001000000010000009C0100002C098817…</text>
+<text x="385" y="963" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="start" xml:space="preserve" >little-endian fields; CRC-16 in bytes 42–43</text>
+<rect x="720" y="897" width="335" height="82" rx="8" fill="#F5F7FA" stroke="#E3E8EE" stroke-width="1.2" />
+<text x="730" y="918" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.5" font-weight="650" fill="#1B2733" text-anchor="start" xml:space="preserve" >Received record (ground CSV row)</text>
+<text x="730" y="941" font-family="'DejaVu Sans Mono', Consolas, monospace" font-size="9.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >2000-01-01T00:00:05.423+00:00,5423,-62.0,nan,7,1,1,41…</text>
+<text x="730" y="963" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10" font-weight="400" fill="#5B6875" text-anchor="start" xml:space="preserve" >adds rx UTC, receiver ms, RSSI, SNR, seq_event</text>
+<text x="30" y="1000" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#B26A00" text-anchor="start" xml:space="preserve" >Example values are from the SIMULATION (session 7, packet 1; synthetic base date 2000-01-01) — not STRATOS measurements.</text>
+<rect x="1080" y="880" width="395" height="165" rx="8" fill="#fff" stroke="#E3E8EE" stroke-width="1.2" />
+<text x="1094" y="900" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="11.5" font-weight="700" fill="#1B2733" text-anchor="start" xml:space="preserve" >Where errors occur (E) and are detected (D)</text>
+<text x="1094" y="920" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >E1 packet lost/corrupted on link → D3 CRC reject, D4 seq gap</text>
+<text x="1094" y="937" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >E2 sensor read fails/implausible → D1 status flag + sentinel</text>
+<text x="1094" y="954" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >E3 SD write fails / power cut → D2 SD_WRITE_ERR, line CRC</text>
+<text x="1094" y="971" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >D5 radio timeout → tx='F' logged onboard</text>
+<text x="1094" y="988" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >D6 reconciliation explains every gap or reports it</text>
+<text x="1094" y="1005" font-family="Inter, 'DejaVu Sans', Arial, Helvetica, sans-serif" font-size="10.2" font-weight="400" fill="#1B2733" text-anchor="start" xml:space="preserve" >Arrows: solid = data · dashed = control · dotted = radio</text>
+</svg>
